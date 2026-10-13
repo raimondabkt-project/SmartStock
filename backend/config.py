@@ -6,15 +6,23 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-jwt-secret-key')
+
+    # Prioritaskan DATABASE_URL / MYSQL_URL dari Railway
+    db_url = os.getenv('DATABASE_URL') or os.getenv('MYSQL_URL')
     
-    # Setup URL SQLAlchemy untuk MySQL
-    DB_USER = os.getenv('DB_USER', 'root')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
-    DB_HOST = os.getenv('DB_HOST', '127.0.0.1')
-    DB_PORT = os.getenv('DB_PORT', '3306')
-    DB_NAME = os.getenv('DB_NAME', 'smartstock_db')
-    
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    if db_url:
+        # Menangani kompatibilitas driver pymysql jika diperlukan
+        if db_url.startswith("mysql://"):
+            db_url = db_url.replace("mysql://", "mysql+pymysql://", 1)
+        SQLALCHEMY_DATABASE_URI = db_url
+    else:
+        # Fallback ke konfigurasi lokal
+        DB_USER = os.getenv('DB_USER', 'root')
+        DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+        DB_HOST = os.getenv('DB_HOST', '127.0.0.1')
+        DB_PORT = os.getenv('DB_PORT', '3306')
+        DB_NAME = os.getenv('DB_NAME', 'smartstock_db')
+        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
     ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL', 'http://localhost:9200')
