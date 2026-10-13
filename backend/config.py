@@ -7,16 +7,16 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-jwt-secret-key')
 
-    # Prioritaskan DATABASE_URL / MYSQL_URL dari Railway
-    db_url = os.getenv('DATABASE_URL') or os.getenv('MYSQL_URL')
+    # Langsung tangkap MYSQL_URL dari Railway
+    db_url = os.getenv('MYSQL_URL') or os.getenv('DATABASE_URL')
     
     if db_url:
-        # Menangani kompatibilitas driver pymysql jika diperlukan
+        # PyMySQL butuh format driver mysql+pymysql://
         if db_url.startswith("mysql://"):
             db_url = db_url.replace("mysql://", "mysql+pymysql://", 1)
         SQLALCHEMY_DATABASE_URI = db_url
     else:
-        # Fallback ke konfigurasi lokal
+        # Fallback lokal kalau dijalankan di laptop
         DB_USER = os.getenv('DB_USER', 'root')
         DB_PASSWORD = os.getenv('DB_PASSWORD', '')
         DB_HOST = os.getenv('DB_HOST', '127.0.0.1')
